@@ -4,9 +4,14 @@
 import bs4
 import urllib.request
 
+# we need add reading some date from the file 'settings.cfg'
+...
+# read file and add strings as variables
+URL = 'https://www.ebay.com/b/Apple-Cell-Phone-Cases-and-Covers/20349/bn_319677'
+ParserType = 'html.parser'
 
-the_site = urllib.request.urlopen('https://www.ebay.com/b/Apple-Cell-Phone-Cases-and-Covers/20349/bn_319677').read()
-just_start = bs4.BeautifulSoup(the_site, 'html.parser')
+the_site = urllib.request.urlopen(URL).read()
+just_start = bs4.BeautifulSoup(the_site, ParserType)
 
 # print(just_start.find_all('p'))
 
