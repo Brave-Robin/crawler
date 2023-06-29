@@ -3,6 +3,7 @@
 import bs4
 import urllib.request
 import yaml
+# pip install pyyaml - cuz yam package is pyyaml
 
 # Read config
 with open("config.yaml", "r") as f:
