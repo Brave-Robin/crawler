@@ -2,23 +2,12 @@
 
 import bs4
 import requests
-import re
+from PIL import Image
+import urllib.request
+# import re
 # import yaml
 
 # pip install pyyaml - cuz yam package is pyyaml
-
-HEADERS = ({'User-Agent':
-            'Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:109.0) Gecko/20100101 Firefox/115.0',
-            'Accept-Language': 'en-US, en;q=0.5'})
-
-URL = "https://www.amazon.com/Saitek-X52-Flight-System-Controller/dp/B000LQ4HTS/ref=sr_1_1?keywords=saitek+x52&qid=1689096103&rnid=2941120011&s=videogames&sprefix=saite%2Caps%2C222&sr=1-1"
-# URL = "https://www.amazon.com/CeraVe-Retinol-Smoothing-Brightening-Fragrance/dp/B07XJ7XWLW/?_encoding=UTF8&pd_rd_w=G1ID7&content-id=amzn1.sym.3f4ca281-e55c-46d1-9425-fb252d20366f&pf_rd_p=3f4ca281-e55c-46d1-9425-fb252d20366f&pf_rd_r=01VQ3ZKZN8NV2KCG00DH&pd_rd_wg=nBvkB&pd_rd_r=72324b8d-8801-46ba-acd4-450f0f39d0a0&ref_=pd_gw_exports_top_sellers_unrec"
-webpage = requests.get(URL, headers=HEADERS)
-
-soup = bs4.BeautifulSoup(webpage.content, "lxml")
-
-# title = soup.find("span", attrs={"id":'productTitle'})
-# print(title.string.strip())
 
 
 def get_title(soup):
@@ -52,9 +41,55 @@ def get_availability(soup):
     return available
 
 
+
+def get_image(soup):
+    try:
+        pictures = soup.find_all("img", attrs={"id": 'landingImage'})
+    except AttributeError:
+        pictures = ""
+
+    for picture in pictures:
+        link = picture['src']
+        urllib.request.urlretrieve(link, "amazon.jpg")
+        i = Image.open('amazon.jpg')
+        return i.show()
+
+
+
+
+
+
+
+
 # print(get_availability(soup))
 
 
-print("Product Title =", get_title(soup))
-print("Product Price =", get_price(soup))
-print("Availability =", get_availability(soup))
+HEADERS = ({'User-Agent':
+            'Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:109.0) Gecko/20100101 Firefox/115.0',
+            'Accept-Language': 'en-US, en;q=0.5'})
+
+URL = "https://www.amazon.com/s?k=saitek+x52&rh=n%3A402045011&ref=nb_sb_noss"
+# URL = "https://www.amazon.com/s?k=Facial+Treatments+%26+Masks&rh=n%3A11062031&ref=nb_sb_noss"
+webpage = requests.get(URL, headers=HEADERS)
+
+soup = bs4.BeautifulSoup(webpage.content, "lxml")
+
+pages = soup.find_all("a", attrs={'class':"a-link-normal s-no-outline"})
+
+page_list = []
+
+
+for page in pages:
+    page_list.append(page.get('href'))
+
+
+for page in page_list:
+    new_webpage = requests.get("https://www.amazon.com" + page, headers=HEADERS)
+    new_soup = bs4.BeautifulSoup(new_webpage.content, "lxml")
+
+
+    print("Product Title =", get_title(new_soup))
+    print("Product Price =", get_price(new_soup))
+    print("Availability =", get_availability(new_soup))
+    print(get_image(new_soup))
+    print("")
