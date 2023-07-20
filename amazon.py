@@ -71,7 +71,7 @@ def get_all_data(url, headers):
 
 
 if __name__ == '__main__':
-    # print("All data is:", get_all_data(URL, HEADERS))
+    print("All data is:", get_all_data(URL, HEADERS))
     # print(get_pic('https://www.amazon.com/MOONCASE-iPhone-14-Pro-Compatible/dp/B0C9TVWG6Q/ref=sr_1_3?crid=4SRFN126NMGY&keywords=iphone+14+pro+max&qid=1689616099&sprefix=iphone+14+pro+max%2Caps%2C221&sr=8-3', HEADERS))
     # image = requests.get("https://m.media-amazon.com/images/I/71BqUh57xQL._AC_SX569_.jpg")
     # with open("71BqUh57xQL._AC_SX569_.jpg", 'wb') as file:
