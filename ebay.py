@@ -47,22 +47,28 @@ def get_info(url, headers, parsertype, title, price, availability):
 # print(get_info(config['URL'], HEADERS, config['ParserType'], config['TITLE'], config['PRICE'], config['AVAILABILITY']))
 
 
-def get_links(url, headers, parsertype, title, price, availability):
+def get_links(url, headers, parser_type):
     """
     :param url:
     :param headers:
-    :param parsertype:
-    :param title:
-    :param price:
-    :param availability:
+    :param parser_type:
     :return:
     """
-    soup = bs4.BeautifulSoup(get_content(url, headers), config['ParserType'])
-    # return bs4.BeautifulSoup(soup, config['ParserType']).find_all("a", attrs={'class':"s-item__link"})
-    return soup.select_one('.> div:nth-child(1) > div:nth-child(2) > a:nth-child(1)')
+    listings = bs4.BeautifulSoup(requests.get(url, headers=headers).content, parser_type).select("li a")
+    links_list = []
+    for a in listings:
+        errors = 0
+        try:
+            link = a["href"]
+        except(LookupError):
+            errors += 1
+        if errors == 0:
+            if link.startswith("https://www.ebay.com/itm/"):
+                links_list.append(link)
+    return links_list
 
 
-print(get_links(config['URL'], HEADERS, config['ParserType'], config['TITLE'], config['PRICE'], config['AVAILABILITY']))
+print(get_links(config['URL'], HEADERS, config['ParserType']))
 
 #     soup = bs4.BeautifulSoup(webpage.content, config['ParserType'])
 # title = soup.select_one(config['TITLE'])
