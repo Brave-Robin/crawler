@@ -22,11 +22,11 @@ def get_content(url, headers):
     return requests.get(url, headers=headers).content
 
 
-def get_info(url, headers, parsertype, title, price, availability):
+def get_info(url, headers, parser_type, title, price, availability):
     """
     :param url:
     :param headers:
-    :param parsertype:
+    :param parser_type:
     :param title:
     :param price:
     :param availability:
@@ -40,11 +40,8 @@ def get_info(url, headers, parsertype, title, price, availability):
         item_dic['availability'] = bs4.BeautifulSoup(get_content(url, headers), config['ParserType']).select_one(
             config['AVAILABILITY']).string.strip()
     except AttributeError:
-        title_string = "noway"
+        print("Found error in URL: {}".format(url))
     return item_dic
-
-
-# print(get_info(config['URL'], HEADERS, config['ParserType'], config['TITLE'], config['PRICE'], config['AVAILABILITY']))
 
 
 def get_links(url, headers, parser_type):
@@ -65,48 +62,28 @@ def get_links(url, headers, parser_type):
         if errors == 0:
             if link.startswith("https://www.ebay.com/itm/"):
                 links_list.append(link)
+    # TODO Need to fix doubles
+    # TODO add pagination
     return links_list
 
 
-print(get_links(config['URL'], HEADERS, config['ParserType']))
+def get_each_items_data(url, headers, parser_type, title, price, availability):
+    """
+    :param url:
+    :param headers:
+    :param parser_type:
+    :param title:
+    :param price:
+    :param availability:
+    :return:
+    """
+    result_list_data = []
+    for link in get_links(url, headers, parser_type):
+        result_list_data.append(get_info(link, headers, parser_type, title, price, availability))
+    return result_list_data
 
-#     soup = bs4.BeautifulSoup(webpage.content, config['ParserType'])
-# title = soup.select_one(config['TITLE'])
 
-# print(title.string.strip())
+all_elements_from_page = get_each_items_data(config['URL'], HEADERS, config['ParserType'], config['TITLE'], config['PRICE'], config['AVAILABILITY'])
 
-# def get_title(soup):
-#     try:
-#         title_string = soup.select_one('.x-item-title__mainTitle > span:nth-child(1)').string.strip()
-#     except AttributeError:
-#         title_string = ""
-#     return title_string
-#
-# # print(get_title(soup))
-#
-#
-# def get_price(soup):
-#     try:
-#         price = soup.select_one('.x-price-primary > span:nth-child(1)').string
-#     except AttributeError:
-#         price = ""
-#     return price
-#
-#
-# # print(get_price(soup))
-# # print(type(get_price(soup)))
-#
-#
-# def get_availability(soup):
-#     try:
-#         available = soup.select_one('.d-quantity__availability > div:nth-child(1) > span:nth-child(1)').string.strip()
-#     except AttributeError:
-#         available = ""
-#     return available
-#
-#
-# # print(get_availability(soup))
-#
-# print("Product Title =", get_title(soup))
-# print("Product Price =", get_price(soup))
-# print("Availability =", get_availability(soup))
+print(all_elements_from_page)
+print(len(all_elements_from_page))
