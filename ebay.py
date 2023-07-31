@@ -1,8 +1,10 @@
 """ BS4 crawler """
+from sqlite3 import Cursor
 
 import requests
 import yaml
 import bs4
+import sqlite3
 
 # # pip install pyyaml - cuz yam package is pyyaml
 
@@ -22,8 +24,9 @@ def get_content(url, headers):
     return requests.get(url, headers=headers).content
 
 
-def get_info(url, headers, parser_type, title, price, availability):
+def get_info(url, headers, parser_type, title, price, availability, db_storage: bool = False):
     """
+    :param db_storage:
     :param url:
     :param headers:
     :param parser_type:
@@ -33,12 +36,23 @@ def get_info(url, headers, parser_type, title, price, availability):
     :return:
     """
     item_dic = {}
+    if db_storage:
+        con = sqlite3.connect("ebay.sqlite")
+        cur = con.cursor()
     try:
-        item_dic['title'] = bs4.BeautifulSoup(get_content(url, headers), config['ParserType']).select_one(config['TITLE']).string.strip()
+        item_dic['title'] = bs4.BeautifulSoup(get_content(url, headers), config['ParserType']).select_one(
+            config['TITLE']).string.strip()
         item_dic['price'] = bs4.BeautifulSoup(get_content(url, headers), config['ParserType']).select_one(
             config['PRICE']).string.strip()
         item_dic['availability'] = bs4.BeautifulSoup(get_content(url, headers), config['ParserType']).select_one(
             config['AVAILABILITY']).string.strip()
+        print(item_dic['title'])
+        if db_storage:
+            cur.execute("""
+                INSERT INTO storage VALUES
+                    (item_dic['title'], item_dic['price'], item_dic['availability'])
+            """)
+            con.commit()
     except AttributeError:
         print("Found error in URL: {}".format(url))
     return item_dic
@@ -67,8 +81,9 @@ def get_links(url, headers, parser_type):
     return links_list
 
 
-def get_each_items_data(url, headers, parser_type, title, price, availability):
+def get_each_items_data(url, headers, parser_type, title, price, availability, db_storage: bool = False):
     """
+    :param db_storage:
     :param url:
     :param headers:
     :param parser_type:
@@ -79,11 +94,15 @@ def get_each_items_data(url, headers, parser_type, title, price, availability):
     """
     result_list_data = []
     for link in get_links(url, headers, parser_type):
-        result_list_data.append(get_info(link, headers, parser_type, title, price, availability))
+        if db_storage:
+            get_info(link, headers, parser_type, title, price, availability, db_storage=True)
+        else:
+            result_list_data.append(get_info(link, headers, parser_type, title, price, availability))
     return result_list_data
 
 
-all_elements_from_page = get_each_items_data(config['URL'], HEADERS, config['ParserType'], config['TITLE'], config['PRICE'], config['AVAILABILITY'])
+all_elements_from_page = get_each_items_data(config['URL'], HEADERS, config['ParserType'], config['TITLE'],
+                                             config['PRICE'], config['AVAILABILITY'])
 
-print(all_elements_from_page)
-print(len(all_elements_from_page))
+# print(all_elements_from_page)
+# print(len(all_elements_from_page))
