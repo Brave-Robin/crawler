@@ -46,12 +46,9 @@ def get_info(url, headers, parser_type, title, price, availability, db_storage: 
             config['PRICE']).string.strip()
         item_dic['availability'] = bs4.BeautifulSoup(get_content(url, headers), config['ParserType']).select_one(
             config['AVAILABILITY']).string.strip()
-        print(item_dic['title'])
+        print(item_dic['title'], item_dic['price'], item_dic['availability'])
         if db_storage:
-            cur.execute("""
-                INSERT INTO storage VALUES
-                    (item_dic['title'], item_dic['price'], item_dic['availability'])
-            """)
+            cur.execute("INSERT INTO storage VALUES (?,?,?)", (item_dic['title'], item_dic['price'], item_dic['availability']))
             con.commit()
     except AttributeError:
         print("Found error in URL: {}".format(url))
@@ -95,7 +92,7 @@ def get_each_items_data(url, headers, parser_type, title, price, availability, d
     result_list_data = []
     for link in get_links(url, headers, parser_type):
         if db_storage:
-            get_info(link, headers, parser_type, title, price, availability, db_storage=True)
+            get_info(link, headers, parser_type, title, price, availability, True)
         else:
             result_list_data.append(get_info(link, headers, parser_type, title, price, availability))
     return result_list_data
