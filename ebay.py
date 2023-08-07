@@ -63,7 +63,12 @@ def get_info(url, headers, parser_type, title, price, availability, db_storage: 
     except AttributeError:
         item_dic['availability'] = "No data"
     if db_storage:
-        if not cur.execute("SELECT 1 FROM storage WHERE url = ?", [url]).fetchone():
+        if cur.execute("SELECT 1 FROM storage WHERE url = ?", [url]).fetchone():
+            if not cur.execute("SELECT 1 FROM storage WHERE title = ? AND price = ? AND availability = ?", (item_dic['title'], item_dic['price'], item_dic['availability'])).fetchone():
+                print("Need update")
+                cur.execute("UPDATE storage SET title = ?, price = ?, availability = ? WHERE url = ?",
+                            (item_dic['title'], item_dic['price'], item_dic['availability'], url))
+        else:
             cur.execute("INSERT INTO storage (url, title, price, availability) VALUES (?, ?, ?, ?)", (url, item_dic['title'], item_dic['price'], item_dic['availability']))
             con.commit()
     return item_dic
