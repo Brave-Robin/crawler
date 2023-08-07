@@ -1,15 +1,23 @@
 """ BS4 crawler """
-from sqlite3 import Cursor
+# from sqlite3 import Cursor
 
 import requests
 import yaml
 import bs4
 import sqlite3
+# import os.path
 
 # # pip install pyyaml - cuz yam package is pyyaml
 
 HEADERS = ({'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:109.0) Gecko/20100101 Firefox/114.0',
             'Accept-Language': 'en-US'})
+
+
+# if not os.path.isfile('config.yaml'):
+#     con = sqlite3.connect("ebay.sqlite")
+#     cur = con.cursor()
+#     cur.execute("CREATE TABLE storage(url, title, price, availability)")
+
 
 with open("config.yaml", "r") as f:
     config = yaml.load(f, Loader=yaml.FullLoader)
@@ -46,10 +54,10 @@ def get_info(url, headers, parser_type, title, price, availability, db_storage: 
             config['PRICE']).string.strip()
         item_dic['availability'] = bs4.BeautifulSoup(get_content(url, headers), config['ParserType']).select_one(
             config['AVAILABILITY']).string.strip()
-        print(item_dic['title'], item_dic['price'], item_dic['availability'])
         if db_storage:
-            cur.execute("INSERT INTO storage VALUES (?,?,?)", (item_dic['title'], item_dic['price'], item_dic['availability']))
-            con.commit()
+            if not cur.execute("SELECT 1 FROM storage WHERE url = ?", [url]).fetchone():
+                cur.execute("INSERT INTO storage (url, title, price, availability) VALUES (?, ?, ?, ?)", (url, item_dic['title'], item_dic['price'], item_dic['availability']))
+                con.commit()
     except AttributeError:
         print("Found error in URL: {}".format(url))
     return item_dic
@@ -92,14 +100,14 @@ def get_each_items_data(url, headers, parser_type, title, price, availability, d
     result_list_data = []
     for link in get_links(url, headers, parser_type):
         if db_storage:
-            get_info(link, headers, parser_type, title, price, availability, True)
+            get_info(link, headers, parser_type, title, price, availability, db_storage)
         else:
             result_list_data.append(get_info(link, headers, parser_type, title, price, availability))
     return result_list_data
 
 
 all_elements_from_page = get_each_items_data(config['URL'], HEADERS, config['ParserType'], config['TITLE'],
-                                             config['PRICE'], config['AVAILABILITY'])
+                                             config['PRICE'], config['AVAILABILITY'], True)
 
 # print(all_elements_from_page)
 # print(len(all_elements_from_page))
