@@ -50,16 +50,22 @@ def get_info(url, headers, parser_type, title, price, availability, db_storage: 
     try:
         item_dic['title'] = bs4.BeautifulSoup(get_content(url, headers), config['ParserType']).select_one(
             config['TITLE']).string.strip()
+    except AttributeError:
+        item_dic['title'] = "No data"
+    try:
         item_dic['price'] = bs4.BeautifulSoup(get_content(url, headers), config['ParserType']).select_one(
             config['PRICE']).string.strip()
+    except AttributeError:
+        item_dic['price'] = "No data"
+    try:
         item_dic['availability'] = bs4.BeautifulSoup(get_content(url, headers), config['ParserType']).select_one(
             config['AVAILABILITY']).string.strip()
-        if db_storage:
-            if not cur.execute("SELECT 1 FROM storage WHERE url = ?", [url]).fetchone():
-                cur.execute("INSERT INTO storage (url, title, price, availability) VALUES (?, ?, ?, ?)", (url, item_dic['title'], item_dic['price'], item_dic['availability']))
-                con.commit()
     except AttributeError:
-        print("Found error in URL: {}".format(url))
+        item_dic['availability'] = "No data"
+    if db_storage:
+        if not cur.execute("SELECT 1 FROM storage WHERE url = ?", [url]).fetchone():
+            cur.execute("INSERT INTO storage (url, title, price, availability) VALUES (?, ?, ?, ?)", (url, item_dic['title'], item_dic['price'], item_dic['availability']))
+            con.commit()
     return item_dic
 
 
