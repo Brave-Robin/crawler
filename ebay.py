@@ -35,7 +35,8 @@ def get_content(url, headers):
 
 def get_pages(url, headers, parser_type):
     total_items =  bs4.BeautifulSoup(get_content(url, headers), config['ParserType']).select_one('.srp-controls__count-heading > span:nth-child(1)').string.strip()
-    item_per_page = bs4.BeautifulSoup(get_content(url, headers), config['ParserType']).select_one('#srp-ipp-menu > button:nth-child(1) > span:nth-child(1) > span:nth-child(1)').string.strip()
+    # item_per_page = bs4.BeautifulSoup(get_content(url, headers), config['ParserType']).select_one('#srp-ipp-menu > button:nth-child(1) > span:nth-child(1) > span:nth-child(1)').string.strip()
+    item_per_page = 240
     total_items = total_items.replace(",", "")
     total_pages = int(total_items) / int(item_per_page)
     ### LIMIT is 42
