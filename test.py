@@ -1,4 +1,4 @@
-a = "https://www.ebay.com/sch/i.html?_from=R40&_nkw=lego&_sacat=0&LH_TitleDesc=0"
+a = "https://www.ebay.com/sch/i.html?_from=R40&_ipg=120&_nkw=lego&_sacat=0&LH_TitleDesc=0"
 def antipagination(url):
     b = a.split("&")
     new_url = ""
