@@ -1,11 +1,5 @@
-#URL: 'https://booktracker.org/viewforum.php?f=255'
-#URL: 'https://www.ebay.com/sch/i.html?_from=R40&_trksid=p2499334.m570.l1313&_nkw=X-BOX+subscriptions'
-#URL: 'https://www.ebay.com/itm/275736222825?hash=item403328dc69:g:gpcAAOSwbK9kjaq9&amdata=enc%3AAQAIAAAA4ATtOBKzapqL5uW1LRYZlFiG7le7dJNXGJ8W9UMPaearAqhVJYU7eePCD7nC4XgHTDft7yoS6UWukEi%2Fs0Ooe70nMwoQsX5D%2F7QhkQJWGkYnl92wG8QJZ%2F5%2F7Q2J8CoYM8kSWxgK8zReJHSKozz1lvvYwr48%2B1Sk4uANWVGw%2FzKheVeQUoPlJP30vwRe0Dhpllcuct6ATLoxukTDfU3qKrDz5vgIS8jhIj9tSZLOKHcrRDoMuVzDau%2BaiebveZwkXeTVI5ZBXN5IGZBX%2FpnydkzUFchL5H3NLktkw2YR3jFw%7Ctkp%3ABFBMsLKGjrFi'
 URL : "https://www.ebay.com/sch/i.html?_from=R40&_nkw=lego&_sacat=0&LH_TitleDesc=0&_ipg=120"
 ParserType: lxml
-#HEADERS: "({'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:109.0) Gecko/20100101 Firefox/114.0', 'Accept-Language': 'en-US' })"
-
 TITLE: '.x-item-title__mainTitle > span:nth-child(1)'
 PRICE: '.x-price-primary > span:nth-child(1)'
 AVAILABILITY: '.d-quantity__availability > div:nth-child(1) > span:nth-child(1)'
-#LINKS: "a", attrs={'class':"s-item__title"}
