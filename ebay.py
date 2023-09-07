@@ -78,6 +78,7 @@ for url in get_pages(config['URL'], HEADERS, config['ParserType']):
         if db_storage:
             con = sqlite3.connect("ebay.sqlite")
             cur = con.cursor()
+
         try:
             item_dic['title'] = bs4.BeautifulSoup(get_content(url, headers), config['ParserType']).select_one(
                 config['TITLE']).string.strip()
