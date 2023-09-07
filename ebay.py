@@ -96,15 +96,19 @@ for url in get_pages(config['URL'], HEADERS, config['ParserType']):
             item_dic['availability'] = "No data"
         if db_storage:
             if cur.execute("SELECT 1 FROM storage WHERE url = ?", [url]).fetchone():
-                if not cur.execute("SELECT 1 FROM storage WHERE title = ? AND price = ? AND availability = ?", (item_dic['title'], item_dic['price'], item_dic['availability'])).fetchone():
+                if not cur.execute("SELECT 1 FROM storage WHERE title = ? AND price = ? AND availability = ?",
+                                   (item_dic['title'],
+                                    item_dic['price'], item_dic['availability'])).fetchone():
                     print("Need update")
                     cur.execute("UPDATE storage SET title = ?, price = ?, availability = ? WHERE url = ?",
                                 (item_dic['title'], item_dic['price'], item_dic['availability'], url))
             else:
-                cur.execute("INSERT INTO storage (url, title, price, availability) VALUES (?, ?, ?, ?)", (url, item_dic['title'], item_dic['price'], item_dic['availability']))
+                cur.execute("INSERT INTO storage (url, title, price, availability) VALUES (?, ?, ?, ?)",
+                            (url, item_dic['title'], item_dic['price'], item_dic['availability']))
                 con.commit()
         print(item_dic)
         return item_dic
+
 
     def get_links(url, headers, parser_type):
         """
