@@ -7,7 +7,7 @@ import sqlite3
 
 # # pip install pyyaml - cuz yam package is pyyaml
 
-with open("config.yaml", "r") as f:
+with open("config.yaml", "r", encoding="utf-8") as f:
     config = yaml.load(f, Loader=yaml.FullLoader)
 
 headers = ({'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:109.0) Gecko/20100101 Firefox/114.0',
