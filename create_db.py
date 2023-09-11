@@ -1,3 +1,5 @@
+"""" Create DB for edu """
+
 import sqlite3
 
 con = sqlite3.connect("ebay.sqlite")

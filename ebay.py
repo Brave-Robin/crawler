@@ -33,10 +33,10 @@ def get_url_with_max_items(input_url):
     :param input_url: main URL to split pages URLs
     :return: new url with max items per page
     """
-    b = input_url.split("&")
+    split_url = input_url.split("&")
     new_url = ""
     page_counter = False
-    for particle in b:
+    for particle in split_url:
         if particle.find("_ipg") != -1:
             particle = "_ipg=240"
             page_counter = True
@@ -59,7 +59,7 @@ def get_pages(url):
                                     parser_type).select_one(
         '.srp-controls__count-heading > span:nth-child(1)').string.strip()
     item_per_page = 240
-    total_items = total_items.replace(",", "").replace(u'\xa0', '')
+    total_items = total_items.replace(",", "").replace('\xa0', '')
     total_pages = int(total_items) / int(item_per_page)
     if total_pages > 42:
         total_pages = 42
