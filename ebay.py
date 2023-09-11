@@ -60,12 +60,12 @@ def get_pages(url):
         '.srp-controls__count-heading > span:nth-child(1)').string.strip()
     item_per_page = 240
     total_items = total_items.replace(",", "").replace('\xa0', '')
-    total_pages = int(total_items) / int(item_per_page)
-    if total_pages > 42:
-        total_pages = 42
+    total_pages = min(int(total_items) / int(item_per_page), 42)
+    # if total_pages > 42:
+    #     total_pages = 42
     page_list = []
-    total_pages = int(total_pages)
-    for page in range(1, total_pages + 1):
+    # total_pages = int(total_pages)
+    for page in range(1, int(total_pages) + 1):
         each_url = get_url_with_max_items(url) + "&_pgn=" + str(page)
         page_list.append(each_url)
     return page_list
