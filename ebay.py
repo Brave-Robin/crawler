@@ -26,7 +26,7 @@ def get_content(search_url):
     :param search_url: ebay search url
     :return: webpage content
     """
-    return requests.get(search_url, headers=headers).content
+    return requests.get(search_url, headers=headers, timeout=5).content
 
 
 def get_url_with_max_items(input_url):
@@ -117,7 +117,7 @@ def get_links(url):
     :param url: search URL
     :return: list of URLs
     """
-    listings = bs4.BeautifulSoup(requests.get(url, headers=headers).content, parser_type).select("li a")
+    listings = bs4.BeautifulSoup(requests.get(url, headers=headers, timeout=5).content, parser_type).select("li a")
     links_list = []
     for a_tag in listings:
         errors = 0
