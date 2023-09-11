@@ -71,7 +71,7 @@ def get_pages(url):
     return page_list
 
 
-def get_info(url, db_storage: bool = False):
+def get_info(url, db_storage: bool = True):
     """
     :param db_storage: true if DB enable
     :param url: link to page
