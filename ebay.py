@@ -1,9 +1,10 @@
 """ BS4 crawler """
 
+import sqlite3
 import requests
 import yaml
 import bs4
-import sqlite3
+
 
 # # pip install pyyaml - cuz yam package is pyyaml
 
@@ -119,11 +120,10 @@ def get_links(url):
     """
     listings = bs4.BeautifulSoup(requests.get(url, headers=headers).content, parser_type).select("li a")
     links_list = []
-    # TODO: refactor to use map
-    for a in listings:
+    for a_tag in listings:
         errors = 0
         try:
-            link = a["href"]
+            link = a_tag["href"]
         except LookupError:
             errors += 1
         if errors == 0:
@@ -140,7 +140,6 @@ def get_each_items_data(url, db_storage: bool = True):
     :return: list of links
     """
     result_list_data = []
-    # TODO: refactor to use map
     for link in get_links(url):
         if db_storage:
             get_info(link)
