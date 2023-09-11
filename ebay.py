@@ -47,8 +47,7 @@ def get_url_with_max_items(input_url):
             new_url = new_url + "&" + particle
     if page_counter:
         return new_url
-    else:
-        return new_url + "&_ipg=240"
+    return new_url + "&_ipg=240"
 
 
 def get_pages(url):
