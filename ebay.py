@@ -1,43 +1,43 @@
 """ BS4 crawler """
-# from sqlite3 import Cursor
 
+import sqlite3
 import requests
 import yaml
 import bs4
-import re
-import sqlite3
-# import os.path
+
 
 # # pip install pyyaml - cuz yam package is pyyaml
 
-HEADERS = ({'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:109.0) Gecko/20100101 Firefox/114.0',
-            'Accept-Language': 'en-US'})
-
-
-# if not os.path.isfile('config.yaml'):
-#     con = sqlite3.connect("ebay.sqlite")
-#     cur = con.cursor()
-#     cur.execute("CREATE TABLE storage(url, title, price, availability)")
-
-
-with open("config.yaml", "r") as f:
+with open("config.yaml", "r", encoding="utf-8") as f:
     config = yaml.load(f, Loader=yaml.FullLoader)
 
+headers = ({'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:109.0) Gecko/20100101 Firefox/114.0',
+            'Accept-Language': 'en-US'})
+main_url = config['URL']
+parser_type = config['ParserType']
+title = config['TITLE']
+price = config['PRICE']
+availability = config['AVAILABILITY']
 
-def get_content(url, headers):
+
+def get_content(search_url):
     """
-    :param url:
-    :param headers:
-    :return:
+    :type search_url: string
+    :param search_url: ebay search url
+    :return: webpage content
     """
-    return requests.get(url, headers=headers).content
+    return requests.get(search_url, headers=headers, timeout=5).content
 
 
-def antipagination(url):
-    b = config['URL'].split("&")
+def get_url_with_max_items(input_url):
+    """
+    :param input_url: main URL to split pages URLs
+    :return: new url with max items per page
+    """
+    split_url = input_url.split("&")
     new_url = ""
     page_counter = False
-    for particle in b:
+    for particle in split_url:
         if particle.find("_ipg") != -1:
             particle = "_ipg=240"
             page_counter = True
@@ -47,118 +47,104 @@ def antipagination(url):
             new_url = new_url + "&" + particle
     if page_counter:
         return new_url
-    else:
-        return new_url+"&_ipg=240"
+    return new_url + "&_ipg=240"
 
-def get_pages(url, headers, parser_type):
-    total_items =  bs4.BeautifulSoup(get_content(antipagination(url), headers), config['ParserType']).select_one('.srp-controls__count-heading > span:nth-child(1)').string.strip()
-    # item_per_page = bs4.BeautifulSoup(get_content(url, headers), config['ParserType']).select_one('#srp-ipp-menu > button:nth-child(1) > span:nth-child(1) > span:nth-child(1)').string.strip()
+
+def get_pages(url):
+    """
+    :param url: main URL for scrape content
+    :return: list of URLs for each pages
+    """
+    total_items = bs4.BeautifulSoup(get_content(get_url_with_max_items(url)),
+                                    parser_type).select_one(
+        '.srp-controls__count-heading > span:nth-child(1)').string.strip()
     item_per_page = 240
-    total_items = total_items.replace(",", "").replace(u'\xa0', '')
-    total_pages = int(total_items) / int(item_per_page)
-    ### LIMIT is 42
-    if total_pages > 42:
-        total_pages = 42
+    total_items = total_items.replace(",", "").replace('\xa0', '')
+    total_pages = min(int(total_items) / int(item_per_page), 42)
+    # if total_pages > 42:
+    #     total_pages = 42
     page_list = []
-    total_pages = int(total_pages)
-    for page in range(1, total_pages + 1):
-        each_url = antipagination(url)+"&_pgn=" + str(page)
+    # total_pages = int(total_pages)
+    for page in range(1, int(total_pages) + 1):
+        each_url = get_url_with_max_items(url) + "&_pgn=" + str(page)
         page_list.append(each_url)
     return page_list
 
-print(get_pages(config['URL'], HEADERS, config['ParserType']))
+
+def get_info(url, db_storage: bool = True):
+    """
+    :param db_storage: true if DB enable
+    :param url: link to page
+    :return: dictionary for each item
+    """
+    item_dic = {}
+    if db_storage:
+        con = sqlite3.connect("ebay.sqlite")
+        cur = con.cursor()
+
+    try:
+        item_dic['title'] = bs4.BeautifulSoup(get_content(url), parser_type).select_one(
+            title).string.strip()
+    except AttributeError:
+        item_dic['title'] = "No data"
+    try:
+        item_dic['price'] = bs4.BeautifulSoup(get_content(url), parser_type).select_one(
+            price).string.strip()
+    except AttributeError:
+        item_dic['price'] = "No data"
+    try:
+        item_dic['availability'] = bs4.BeautifulSoup(get_content(url), parser_type).select_one(
+            availability).string.strip()
+    except AttributeError:
+        item_dic['availability'] = "No data"
+    if db_storage:
+        if cur.execute("SELECT 1 FROM storage WHERE url = ?", [url]).fetchone():
+            if not cur.execute("SELECT 1 FROM storage WHERE title = ? AND price = ? AND availability = ?",
+                               (item_dic['title'],
+                                item_dic['price'], item_dic['availability'])).fetchone():
+                print("Need update")
+                cur.execute("UPDATE storage SET title = ?, price = ?, availability = ? WHERE url = ?",
+                            (item_dic['title'], item_dic['price'], item_dic['availability'], url))
+        else:
+            cur.execute("INSERT INTO storage (url, title, price, availability) VALUES (?, ?, ?, ?)",
+                        (url, item_dic['title'], item_dic['price'], item_dic['availability']))
+            con.commit()
+    return item_dic
 
 
-# for url in get_pages(config['URL'], HEADERS, config['ParserType']):
-#
-#     def get_info(url, headers, parser_type, title, price, availability, db_storage: bool = False):
-#         """
-#         :param db_storage:
-#         :param url:
-#         :param headers:
-#         :param parser_type:
-#         :param title:
-#         :param price:
-#         :param availability:
-#         :return:
-#         """
-#         item_dic = {}
-#         if db_storage:
-#             con = sqlite3.connect("ebay.sqlite")
-#             cur = con.cursor()
-#         try:
-#             item_dic['title'] = bs4.BeautifulSoup(get_content(url, headers), config['ParserType']).select_one(
-#                 config['TITLE']).string.strip()
-#         except AttributeError:
-#             item_dic['title'] = "No data"
-#         try:
-#             item_dic['price'] = bs4.BeautifulSoup(get_content(url, headers), config['ParserType']).select_one(
-#                 config['PRICE']).string.strip()
-#         except AttributeError:
-#             item_dic['price'] = "No data"
-#         try:
-#             item_dic['availability'] = bs4.BeautifulSoup(get_content(url, headers), config['ParserType']).select_one(
-#                 config['AVAILABILITY']).string.strip()
-#         except AttributeError:
-#             item_dic['availability'] = "No data"
-#         if db_storage:
-#             if cur.execute("SELECT 1 FROM storage WHERE url = ?", [url]).fetchone():
-#                 if not cur.execute("SELECT 1 FROM storage WHERE title = ? AND price = ? AND availability = ?", (item_dic['title'], item_dic['price'], item_dic['availability'])).fetchone():
-#                     print("Need update")
-#                     cur.execute("UPDATE storage SET title = ?, price = ?, availability = ? WHERE url = ?",
-#                                 (item_dic['title'], item_dic['price'], item_dic['availability'], url))
-#             else:
-#                 cur.execute("INSERT INTO storage (url, title, price, availability) VALUES (?, ?, ?, ?)", (url, item_dic['title'], item_dic['price'], item_dic['availability']))
-#                 con.commit()
-#         print(item_dic)
-#         return item_dic
-#
-#     def get_links(url, headers, parser_type):
-#         """
-#         :param url:
-#         :param headers:
-#         :param parser_type:
-#         :return:
-#         """
-#         listings = bs4.BeautifulSoup(requests.get(url, headers=headers).content, parser_type).select("li a")
-#         links_list = []
-#         for a in listings:
-#             errors = 0
-#             try:
-#                 link = a["href"]
-#             except(LookupError):
-#                 errors += 1
-#             if errors == 0:
-#                 if link.startswith("https://www.ebay.com/itm/"):
-#                     links_list.append(link)
-#         # TODO Need to fix doubles
-#         # TODO add pagination
-#         del links_list[::2]
-#         return links_list
-#
-#
-#     def get_each_items_data(url, headers, parser_type, title, price, availability, db_storage: bool = False):
-#         """
-#         :param db_storage:
-#         :param url:
-#         :param headers:
-#         :param parser_type:
-#         :param title:
-#         :param price:
-#         :param availability:
-#         :return:
-#         """
-#         result_list_data = []
-#         for link in get_links(url, headers, parser_type):
-#             if db_storage:
-#                 get_info(link, headers, parser_type, title, price, availability, db_storage)
-#             else:
-#                 result_list_data.append(get_info(link, headers, parser_type, title, price, availability))
-#         return result_list_data
-#
-#
-#     all_elements_from_page = get_each_items_data(url, HEADERS, config['ParserType'], config['TITLE'],
-#                                                  config['PRICE'], config['AVAILABILITY'], True)
+def get_links(url):
+    """
+    :param url: search URL
+    :return: list of URLs
+    """
+    listings = bs4.BeautifulSoup(requests.get(url, headers=headers, timeout=5).content, parser_type).select("li a")
+    links_list = []
+    for a_tag in listings:
+        errors = 0
+        try:
+            link = a_tag["href"]
+        except LookupError:
+            errors += 1
+        if errors == 0:
+            if link.startswith("https://www.ebay.com/itm/"):
+                links_list.append(link)
+    del links_list[::2]
+    return links_list
 
-    # print(all_elements_from_page)
-    # print(len(all_elements_from_page))
+
+def get_each_items_data(url, db_storage: bool = True):
+    """
+    :param db_storage: true if DB enable
+    :param url: link to page
+    :return: list of links
+    """
+    result_list_data = []
+    for link in get_links(url):
+        if db_storage:
+            get_info(link)
+        else:
+            result_list_data.append(get_info(link))
+    return result_list_data
+
+
+print(list(map(get_each_items_data, get_pages(main_url))))
