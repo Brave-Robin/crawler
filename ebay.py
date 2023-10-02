@@ -61,10 +61,10 @@ def get_pages(url):
     item_per_page = 240
     total_items = total_items.replace(",", "").replace('\xa0', '')
     total_pages = min(int(total_items) / int(item_per_page), 42)
-    # if total_pages > 42:
-    #     total_pages = 42
     page_list = []
-    # total_pages = int(total_pages)
+    global total_elements
+    total_elements = min((total_pages * item_per_page), 10_000)
+    print(f"Total elements: {total_elements}")
     for page in range(1, int(total_pages) + 1):
         each_url = get_url_with_max_items(url) + "&_pgn=" + str(page)
         page_list.append(each_url)
@@ -139,7 +139,10 @@ def get_each_items_data(url, db_storage: bool = True):
     :return: list of links
     """
     result_list_data = []
+    counter = 0
     for link in get_links(url):
+        print(f"{counter + 1}/{total_elements}")
+        counter += 1
         if db_storage:
             get_info(link)
         else:
