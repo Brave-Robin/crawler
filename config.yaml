@@ -1,5 +1,15 @@
-URL : "https://www.ebay.com/sch/i.html?_from=R40&_nkw=lego&_sacat=0&LH_TitleDesc=0&_ipg=120"
-ParserType: lxml
+# Amazon
+#URL: "https://www.amazon.com/s?k=toyota+cooler&crid=KOQDCEDBNZAI&sprefix=toyota+coller"
+#ParserType: lxml
+#TITLE: 'span.a-size-large'
+#PRICE: '.reinventPricePriceToPayMargin > span:nth-child(1)'
+#AVAILABILITY: '#availability > span:nth-child(1)'
+#ITEMS: ''
+
+## EBAY
+URL: "https://www.ebay.com/sch/i.html?_from=R40&_nkw=lego&_sacat=0&LH_TitleDesc=0&_ipg=120"
 TITLE: '.x-item-title__mainTitle > span:nth-child(1)'
 PRICE: '.x-price-primary > span:nth-child(1)'
 AVAILABILITY: '.d-quantity__availability > div:nth-child(1) > span:nth-child(1)'
+ITEMS: '.srp-controls__count-heading > span:nth-child(1)'
+ParserType: lxml

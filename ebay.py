@@ -4,6 +4,7 @@ import sqlite3
 import requests
 import yaml
 import bs4
+import tqdm
 
 
 # # pip install pyyaml - cuz yam package is pyyaml
@@ -18,6 +19,7 @@ parser_type = config['ParserType']
 title = config['TITLE']
 price = config['PRICE']
 availability = config['AVAILABILITY']
+items = config['ITEMS']
 
 
 def get_content(search_url):
@@ -56,15 +58,13 @@ def get_pages(url):
     :return: list of URLs for each pages
     """
     total_items = bs4.BeautifulSoup(get_content(get_url_with_max_items(url)),
-                                    parser_type).select_one(
-        '.srp-controls__count-heading > span:nth-child(1)').string.strip()
+                                    parser_type).select_one(items).string.strip()
     item_per_page = 240
     total_items = total_items.replace(",", "").replace('\xa0', '')
     total_pages = min(int(total_items) / int(item_per_page), 42)
     page_list = []
     global total_elements
-    total_elements = min((total_pages * item_per_page), 10_000)
-    print(f"Total elements: {total_elements}")
+    total_elements = int(min((total_pages * item_per_page), 10_000))
     for page in range(1, int(total_pages) + 1):
         each_url = get_url_with_max_items(url) + "&_pgn=" + str(page)
         page_list.append(each_url)
@@ -140,12 +140,22 @@ def get_each_items_data(url, db_storage: bool = True):
     """
     result_list_data = []
     counter = 0
-    for link in get_links(url):
-        print(f"{counter + 1}/{total_elements}")
-        counter += 1
-        if db_storage:
-            get_info(link)
-        else:
+
+    tqdm_params = {
+        'desc': 'All elements',
+        'total': total_elements,
+        'miniters': 1,
+        'unit': 'item(s)',
+        'unit_scale': False,
+        'unit_divisor': 1000,
+        'write_bytes': False,
+    }
+
+    with tqdm.tqdm(**tqdm_params) as progressbar:
+        for link in get_links(url):
+            progressbar.update(counter+1)
+            if db_storage:
+                get_info(link)
             result_list_data.append(get_info(link))
     return result_list_data
 
