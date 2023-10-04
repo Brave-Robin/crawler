@@ -65,7 +65,7 @@ def get_pages(url):
     total_items = total_items.replace(",", "").replace('\xa0', '')
     total_pages = min(int(total_items) / int(item_per_page), 42)
     page_list = []
-    global TOTAL_ELEMENTS
+    global TOTAL_ELEMENTS # pylint: disable=W0603
     TOTAL_ELEMENTS = int(min((total_pages * item_per_page), 10_000))
     for page in range(1, int(total_pages) + 1):
         each_url = get_url_with_max_items(url) + "&_pgn=" + str(page)
