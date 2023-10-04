@@ -1,11 +1,11 @@
 """ BS4 crawler """
 
 import sqlite3
-import requests
-import yaml
-import bs4
-import tqdm
 
+import bs4
+import requests
+import tqdm
+import yaml
 
 # # pip install pyyaml - cuz yam package is pyyaml
 
