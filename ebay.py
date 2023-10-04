@@ -21,6 +21,8 @@ price = config['PRICE']
 availability = config['AVAILABILITY']
 items = config['ITEMS']
 
+total_elements = 0
+
 
 def get_content(search_url):
     """
