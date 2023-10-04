@@ -21,7 +21,7 @@ price = config['PRICE']
 availability = config['AVAILABILITY']
 items = config['ITEMS']
 
-total_elements = 0
+TOTAL_ELEMENTS = 0
 
 
 def get_content(search_url):
@@ -65,8 +65,8 @@ def get_pages(url):
     total_items = total_items.replace(",", "").replace('\xa0', '')
     total_pages = min(int(total_items) / int(item_per_page), 42)
     page_list = []
-    global total_elements
-    total_elements = int(min((total_pages * item_per_page), 10_000))
+    global TOTAL_ELEMENTS
+    TOTAL_ELEMENTS = int(min((total_pages * item_per_page), 10_000))
     for page in range(1, int(total_pages) + 1):
         each_url = get_url_with_max_items(url) + "&_pgn=" + str(page)
         page_list.append(each_url)
@@ -145,7 +145,7 @@ def get_each_items_data(url, db_storage: bool = True):
 
     tqdm_params = {
         'desc': 'All elements',
-        'total': total_elements,
+        'total': TOTAL_ELEMENTS,
         'miniters': 1,
         'unit': 'item(s)',
         'unit_scale': False,
